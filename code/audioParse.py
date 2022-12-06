@@ -10,8 +10,9 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 # ['Happy music', 'Funny music', 'Sad music', 'Tender music', 'Exciting music', 'Angry music', 'Scary music'] --> which is in range [276:283]
+
 def read_labels():
-    with open('data/music/class_labels_indices.csv', encoding='utf-8') as class_map_csv:
+    with open('../data/music/class_labels_indices.csv', encoding='utf-8') as class_map_csv:
         class_names = [display_name for (class_index, mid, display_name) in csv.reader(class_map_csv)]
         class_names = class_names[1:]
     class_names = np.array(class_names)
@@ -35,7 +36,7 @@ def _parse_function(example_proto):
   return tf.io.parse_single_sequence_example(example_proto, context_features=context, sequence_features=sequence)
 
 def read_audio(): 
-    tfrecord_files = 'data/music/bal_train/'
+    tfrecord_files = '../data/music/bal_train/'
     tfrecord_filenames = os.listdir(tfrecord_files)
     tfrecord_filenames = [(tfrecord_files + "/" + each_fname) 
                       for each_fname 
@@ -48,7 +49,7 @@ def read_audio():
 def parsePerEmotion(parsed_dataset, class_names, desire):
     music_contexts = []
     music_embeddings = []
-
+    music_labels = []
     for i, example in enumerate(parsed_dataset):
         context, sequence = example
         labels = context['labels'].values.numpy()
@@ -66,15 +67,19 @@ def parsePerEmotion(parsed_dataset, class_names, desire):
                              context['start_time_seconds'].numpy(), 
                              context['end_time_seconds'].numpy())
             music_contexts.append(music_context)
+            music_labels.append(class_names[desire].split()[0].lower())
 
     music_embeddings = np.array(music_embeddings)
-    return music_embeddings, music_contexts
+    return music_embeddings, music_contexts, music_labels
 
 def getFullEmotion(parsed_dataset, class_names, desired_class): 
-    emotionAudio = dict()
+    labels, images = np.array([]), np.empty([1,10,128])
     for desire in desired_class: 
-        emotionAudio[desire] = parsePerEmotion(parsed_dataset, class_names, desire)
-    return emotionAudio
+        embd, contx, label = parsePerEmotion(parsed_dataset, class_names, desire)
+        labels = np.hstack((labels, label))
+        images = np.concatenate((images, embd), axis = 0)
+    shuf_img, shuf_lab = shuffle_data(images[1:], labels)
+    return shuf_img, shuf_lab
    
 
 def visualize(parsed_dataset, class_names): 
@@ -88,6 +93,14 @@ def visualize(parsed_dataset, class_names):
         plt.imshow(embedding,cmap='gray')
         plt.show()
     return 
+
+def shuffle_data(image_full, label_full, seed=1):
+    rng = np.random.default_rng(seed)
+    shuffled_index = rng.permutation(np.arange(len(image_full)))
+    image_full = image_full[shuffled_index]
+    label_full = label_full[shuffled_index]
+    return image_full, label_full
+
 
 
 
