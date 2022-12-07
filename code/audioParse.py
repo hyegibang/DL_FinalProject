@@ -42,6 +42,7 @@ def read_audio():
                       for each_fname 
                       in tfrecord_filenames]
     raw_dataset = tf.data.TFRecordDataset(tfrecord_filenames)
+    print(raw_dataset)
     print("Lenght of tfrecord: " + str(len(tfrecord_filenames)))
     parsed_dataset = raw_dataset.map(_parse_function)
     return parsed_dataset
@@ -53,7 +54,6 @@ def parsePerEmotion(parsed_dataset, class_names, desire):
     for i, example in enumerate(parsed_dataset):
         context, sequence = example
         labels = context['labels'].values.numpy()
-
         if (desire in labels):
             raw_embedding = sequence['audio_embedding'].numpy()
             embedding = tf.io.decode_raw(raw_embedding, tf.int8).numpy()
@@ -68,8 +68,8 @@ def parsePerEmotion(parsed_dataset, class_names, desire):
                              context['end_time_seconds'].numpy())
             music_contexts.append(music_context)
             music_labels.append(class_names[desire].split()[0].lower())
-
     music_embeddings = np.array(music_embeddings)
+    print(i)
     return music_embeddings, music_contexts, music_labels
 
 def getFullEmotion(parsed_dataset, class_names, desired_class): 
