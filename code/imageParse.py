@@ -11,6 +11,9 @@ import matplotlib.pyplot as plt
 from os import listdir
 from os.path import isfile, join
 from PIL import Image
+# from skimage.transform import resize
+import cv2
+
 
 def input_prep_fn(x):
     ## TODO: Perform preprocessing on the data as appropriate
@@ -32,10 +35,8 @@ def parseData_Art():
     for image in imageList:
         if image == ".DS_Store":
             continue
-        currImage=Image.open(mypath + "/" + image) 
-        currImage= np.asarray(currImage)
-        currImage= np.resize(currImage, (255,255,3))
-#         dataImage = np.concatenate((currImage, dataImage))
+        currImage = cv2.imread(mypath + "/" + image)
+        currImage = cv2.resize(currImage, dsize=(255,255))
         dataImage.append(currImage)
         label = image.split("_")[0]
         
@@ -60,7 +61,7 @@ def parseData_Art():
 
 def shuffle_data(image_full, label_full, seed=1):
 #     print(image_full)
-    image_full = np.array(image_full, dtype=object)
+    image_full = np.array(image_full)
     label_full = np.array(label_full)
     rng = np.random.default_rng(seed)
     shuffled_index = rng.permutation(np.arange(len(image_full)))
@@ -68,7 +69,7 @@ def shuffle_data(image_full, label_full, seed=1):
     label_full = label_full[shuffled_index]
     return image_full, label_full
 
-def parseData_Abstract():
+def parseData_Abs():
     """Load Data and Assign Lables"""
     mypath = "../data/image/abstract/files"
     imageList = [f for f in listdir(mypath) if isfile(join(mypath, f))]
@@ -78,10 +79,9 @@ def parseData_Abstract():
     for image in imageList:
         if image == ".DS_Store":
             continue
-        currImage=Image.open(mypath + "/" + image) 
-        currImage= np.asarray(currImage)
-        dataImage.append(currImage) 
-    
+        currImage = cv2.imread(mypath + "/" + image)
+        currImage = cv2.resize(currImage, dsize=(255,255))
+        dataImage.append(currImage)
     lineCount = 0 
     with open('../data/image/abstract/abstract_label.csv', newline='') as csvfile:
         csvRead = csv.reader(csvfile)
@@ -108,6 +108,6 @@ def parseData_Abstract():
             elif label == "'Sad'": 
                 label = "sad"
             dataLabel.append(label)
-            
+        dataImage = np.array(dataImage)
     shuf_img, shuf_lab = shuffle_data(dataImage, dataLabel)
     return shuf_img, shuf_lab
