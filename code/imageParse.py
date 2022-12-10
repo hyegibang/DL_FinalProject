@@ -17,9 +17,9 @@ import cv2
 
 def input_prep_fn(x):
     ## TODO: Perform preprocessing on the data as appropriate
-    out = np.expand_dims(x, axis = -1)
-    out = out.astype('float32') / 255.0
-    out = tf.image.resize(out, [32,32,3])
+    # out = np.expand_dims(x, axis = -1)
+    out = x.astype('float32') / 255.0
+    out = tf.image.resize(out, [32,32])
     return out
 
 
@@ -56,7 +56,8 @@ def parseData_Art():
         
     dataImage = np.array(dataImage)
     shuf_img, shuf_lab = shuffle_data(dataImage[1:], dataLabel)
-    return shuf_img, shuf_lab
+    train_test = int(len(shuf_img) * 0.8)
+    return shuf_img[:train_test], shuf_lab[:train_test], shuf_img[train_test:], shuf_lab[train_test:]
     
 
 def shuffle_data(image_full, label_full, seed=1):
@@ -110,4 +111,5 @@ def parseData_Abs():
             dataLabel.append(label)
         dataImage = np.array(dataImage)
     shuf_img, shuf_lab = shuffle_data(dataImage, dataLabel)
-    return shuf_img, shuf_lab
+    train_test = int(len(shuf_img) * 0.8)
+    return shuf_img[:train_test], shuf_lab[:train_test], shuf_img[train_test:], shuf_lab[train_test:]
