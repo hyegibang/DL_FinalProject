@@ -1,23 +1,15 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import numpy as np
-import pandas as pd
-import os
 import tensorflow as tf
 import csv
 import numpy as np
-import IPython.display as display
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 from os import listdir
 from os.path import isfile, join
-from PIL import Image
-# from skimage.transform import resize
 import cv2
 
 
 def input_prep_fn(x):
     ## TODO: Perform preprocessing on the data as appropriate
-    # out = np.expand_dims(x, axis = -1)
     out = x.astype('float32') / 255.0
     out = tf.image.resize(out, [32,32])
     return out
@@ -29,7 +21,6 @@ def parseData_Art():
      
     imageList = [f for f in listdir(mypath) if isfile(join(mypath, f))]
     dataLabel = np.array([])
-#     dataImage= np.empty([255,255,3])
     dataImage = []
      
     for image in imageList:
@@ -61,7 +52,6 @@ def parseData_Art():
     
 
 def shuffle_data(image_full, label_full, seed=1):
-#     print(image_full)
     image_full = np.array(image_full)
     label_full = np.array(label_full)
     rng = np.random.default_rng(seed)
