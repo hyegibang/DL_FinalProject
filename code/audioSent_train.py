@@ -38,19 +38,25 @@ def test(model, music_input, VAD_true):
         lossList.append(batchLoss)
     return tf.reduce_mean(np.array(lossList))
 
-def test_VAD(model, music_input,VAD_true): 
+def test_VAD(model, music_input, VAD_true, VAD_true_id): 
     batch_size = model.batch_size
     input_size = len(music_input) - (len(music_input)%batch_size)
-    music_input, VAD_true = shuffle_tfdata(music_input, VAD_true)
+    
+    input_size = len(music_input)
+    shuffled_index = tf.random.shuffle(tf.range(input_size))
+    music_input  = tf.gather(music_input, shuffled_index)
+    VAD_true = tf.gather(VAD_true, shuffled_index)
+    VAD_true_id = tf.gather(VAD_true_id, shuffled_index)
+
     VADPred_list = []
     
     for curr in range(0, input_size, batch_size): 
         currMusicInput = music_input[curr:(curr + batch_size)]
-        currVADTrue    = VAD_true[curr:(curr + batch_size)]        
+        currVADTrue    = VAD_true[curr:(curr + batch_size)]      
         currVADPred = model(currMusicInput)
-        VADPred_list.append([currVADTrue, currVADPred])
+        currVADTrue_id = VAD_true_id[curr:(curr + batch_size)]
+        VADPred_list.append([currVADTrue, currVADPred, currVADTrue_id])
     return VADPred_list[0]
-
 
 
 def getClosest(VAD_pred, music_vad_mapping):
